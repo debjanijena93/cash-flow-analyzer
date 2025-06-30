@@ -1,0 +1,5 @@
+### Fetch from BTP integration Suit and upload in AWS S3
+POST http://localhost:4004/odata/v4/main/uploadCSV
+Content-Type: IEEE754Compatible=true
+
+<
