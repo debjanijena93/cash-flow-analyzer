@@ -2,6 +2,9 @@ const cds = require('@sap/cds');
 const csv = require('csv-parser') // or use 'papaparse' for browser-side parsing
 const fs = require('fs')
 const { Readable } = require('stream');
+const proxy = require('@sap/cds-odata-v2-adapter-proxy')
+
+//cds.on('bootstrap', app =>ppid.use(proxy()))
 
 async function parseCSV(file) {
     return new Promise((resolve, reject) => {
@@ -20,21 +23,62 @@ async function parseCSV(file) {
     })
 }
 
+function cleanNumber(value) {
+    if (!value) return 0;
+    const cleaned = value.toString()
+        .replace(/[(),]/g, '')  // Remove parentheses (used for negative numbers)
+        .replace(/[^\d.-]/g, ''); // Remove all non-numeric except . and -
+    return parseFloat(cleaned) || 0;
+}
+
+function formatDate(dateStr) {
+    if (!dateStr) return null;
+    // Assuming format 'DD/MM/YY' or 'DD/MM/YYYY'
+    const [day, month, year] = dateStr.split('/');
+    const fullYear = year.length === 2 ? `20${year}` : year;
+    return new Date(`${fullYear}-${month}-${day}`);
+}
 
 module.exports = cds.service.impl(async function (srv) {
 
     srv.on('updateProcessingStatus', async (req) => {
 
-        const { openItemsStagingTable } = cds.entities('app.openitems');
+        const { OpenItemsStagingTable } = cds.entities('app.openitems');
         const tx = cds.transaction(req);
 
-        await tx.run(
-            UPDATE(openItemsStagingTable)
-                .set({ processingStatus: req.data.processingStatus })
-                .where({ runID: req.data.runID }))
+        /*        await tx.run(
+                    UPDATE(openItemsStagingTable)
+                        .set({ processingStatus: req.data.processingStatus })
+                        .where({ runID: req.data.runID }))*/
+
+        try {
+            // Process each item sequentially
+            for (const item of req.data.items) {
+                await tx.run(
+                    UPDATE(OpenItemsStagingTable)
+                        .set({ processingStatus: item.processingStatus })
+                        .where({ runID: item.runID })
+                );
+            }
+            await tx.commit();
+            return {};
+        } catch (error) {
+            await tx.rollback();
+            console.error('Update failed:', error);
+            return req.error(500, 'Failed to update processing status');
+        }
 
     })
 
+    /*    cds.on('bootstrap', (app) => {
+            app.use(express.text({ type: 'text/csv' }));
+        });
+    */
+
+   /* srv.on('UPDATE', 'FileUpload', async (req) => {
+        let variable;
+    })
+*/
     srv.on('uploadCSV', async (req) => {
         try {
             const { file } = req.data;
@@ -59,16 +103,21 @@ module.exports = cds.service.impl(async function (srv) {
 
             // Get the current maximum seqNo for this runID
             const { OpenItemsStagingTable } = cds.entities;
-            const maxSeqNoResult = await SELECT.one`max(seqNo) as maxSeqNo`
-                .from(OpenItemsStagingTable)
-                .where({ runID: runID });
 
-            let currentSeqNo = maxSeqNoResult ? maxSeqNoResult.maxSeqNo + 1 : 1;
+            const tx = cds.transaction(req)
+            const maxRunID = await tx.run(
+                SELECT.one.from('OpenItemsStagingTable')
+                    .columns('max(runID) as maxID'))
+
+            maxRunID = maxRunID ? maxRunID + 1 : 1;
+
+            let currentSeqNo = 1;
 
             // Transform records with sequential seqNo
             const transformedRecords = records.map(record => ({
                 runID: runID,
                 seqNo: currentSeqNo++,
+                //documentDate : 
                 // Map other CSV fields to entity fields
                 // Example:
                 // field1: record.column1,
@@ -96,17 +145,7 @@ module.exports = cds.service.impl(async function (srv) {
 
         try {
 
-            const db = await cds.connect.to("db");
-            const runID = new SequenceHelper({
-                db: db,
-                sequence: "RUN_ID",
-                table: "OpenItemsStagingTable",
-                field: "runID"
-            });
-
-            let ID = await runID.getNextNumber();
-
-            const csvFilePath = 'inputfiles/inputfile1.csv'; // or provide path relative to project root
+            const csvFilePath = 'inputFolder/inputfile2.csv'; // or provide path relative to project root
 
 
             // Read and parse the CSV file
@@ -121,8 +160,13 @@ module.exports = cds.service.impl(async function (srv) {
 
             // Get the current maximum seqNo for this runID
             const { OpenItemsStagingTable } = cds.entities;
-            const lastRunID = await SELECT.one`max(runID) as lastRunID`
-                .from(OpenItemsStagingTable);
+            const tx = cds.transaction(req)
+            const maxRunIDResult = await tx.run(
+                SELECT.one.from('OpenItemsStagingTable')
+                    .columns('max(runID) as maxID'))
+
+            var runID = (maxRunIDResult?.maxID ?? 0) + 1;
+
 
             var currentSeqNo = 1;
 
@@ -131,9 +175,35 @@ module.exports = cds.service.impl(async function (srv) {
                 // Map CSV fields to entity fields
                 runID: runID,
                 seqNo: currentSeqNo++,
-                field1: record.csvField1,
-                field2: parseInt(record.csvField2),
-                // ... etc
+                documentDate: formatDate(record['Document Date']),
+                postingDate: formatDate(record['Posting Date']),
+                //documentDate: record['Document Date'],
+                //postingDate: record['Posting Date'],
+                entryDate: formatDate(record['Entry Date']),
+                documentType: record['Document Type'],
+                profitCenter: record['Profit Center'],
+                reference: record['Reference'],
+                referenceKey2: record['Reference Key 2'],
+                assignment: record['Assignment'],
+                documentHeaderText: record['Document Header Text'],
+                text: record['Text'],
+                postingKey: record['Posting Key'],
+                documentCurrency: { code: record['Document currency']?.trim() },
+                amountInDocCurr: cleanNumber(record['Amount in doc. curr.']),
+                //localCurrency: record['Local Currency'],
+                //amountInLocalCurrency: record['Amount in local currency'],
+                localCurrency: { code: record['Local Currency']?.trim() },
+                amountInLocalCurrency: cleanNumber(record['Amount in local currency']),
+                companyCode: record['Company Code'],
+                yearMonth: record['Year/month'],
+                documentNumber: record['Document Number'],
+                account: record['Account'],
+                username: record['User name'],
+                postingPeriod: record['Posting Period'],
+                absoluteValue: record['Absolute Value'],
+                usdAmount: record['USD Amount'],
+                days: record['Days'],
+                agingBracket: record['Aging Bracket']
             }));
 
             await INSERT.into(OpenItemsStagingTable).entries(transformedRecords);

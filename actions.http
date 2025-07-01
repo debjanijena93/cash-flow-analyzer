@@ -1,5 +1,51 @@
-### Fetch from BTP integration Suit and upload in AWS S3
-POST http://localhost:4004/odata/v4/main/uploadCSV
-Content-Type: IEEE754Compatible=true
+###
+POST http://localhost:4004/odata/v4/main/FileUpload
+Content-Type : application/json
 
-<
+{
+    "fileName" : "file2"
+}
+
+###
+PUT http://localhost:4004/odata/v4/main/FileUpload('file1')
+Content-Type : application/json
+
+{
+    "user" : "Debjani"
+}
+
+
+###
+PUT http://localhost:4004/odata/v4/main/FileUpload('file1')/fileContent
+Content-Type : text/csv
+
+< ./inputfile2.csv
+
+###
+GET  http://localhost:4004/odata/v4/main/FileUpload('file1')/fileContent
+
+
+###
+GET http://localhost:4004/odata/v4/main/FileUpload('file1')
+
+
+
+###
+POST http://localhost:4004/odata/v4/main/importCSV
+
+###
+GET http://localhost:4004/odata/v4/main/OpenItemsStagingTable
+
+
+###
+POST http://localhost:4004/odata/v4/main/updateProcessingStatus
+Content-Type : application/json
+
+{
+"items": [
+        {"runID": 1, "processingStatus": "COMPLETED"},
+        {"runID": 2, "processingStatus": "FAILED"}
+    ]
+}
+
+
