@@ -2,26 +2,7 @@ const cds = require('@sap/cds');
 const csv = require('csv-parser') // or use 'papaparse' for browser-side parsing
 const fs = require('fs')
 const { Readable } = require('stream');
-const proxy = require('@sap/cds-odata-v2-adapter-proxy')
 
-//cds.on('bootstrap', app =>ppid.use(proxy()))
-
-async function parseCSV(file) {
-    return new Promise((resolve, reject) => {
-        const results = []
-
-        // Create a read stream from the buffer
-        const stream = require('stream')
-        const bufferStream = new stream.PassThrough()
-        bufferStream.end(file.buffer)
-
-        bufferStream
-            .pipe(csv())
-            .on('data', (data) => results.push(data))
-            .on('end', () => resolve(results))
-            .on('error', (error) => reject(error))
-    })
-}
 
 function cleanNumber(value) {
     if (!value) return 0;
@@ -70,15 +51,6 @@ module.exports = cds.service.impl(async function (srv) {
 
     })
 
-    /*    cds.on('bootstrap', (app) => {
-            app.use(express.text({ type: 'text/csv' }));
-        });
-    */
-
-   /* srv.on('UPDATE', 'FileUpload', async (req) => {
-        let variable;
-    })
-*/
     srv.on('uploadCSV', async (req) => {
         try {
             const { file } = req.data;
