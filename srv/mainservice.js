@@ -117,8 +117,7 @@ module.exports = cds.service.impl(async function (srv) {
 
         try {
 
-            const csvFilePath = 'inputFolder/inputfile2.csv'; // or provide path relative to project root
-
+            const csvFilePath = './srv/datafiles/inputfile2.csv'; // or provide path relative to project root
 
             // Read and parse the CSV file
             const records = await new Promise((resolve, reject) => {
@@ -134,7 +133,7 @@ module.exports = cds.service.impl(async function (srv) {
             const { OpenItemsStagingTable } = cds.entities;
             const tx = cds.transaction(req)
             const maxRunIDResult = await tx.run(
-                SELECT.one.from('OpenItemsStagingTable')
+                SELECT.one.from(OpenItemsStagingTable)
                     .columns('max(runID) as maxID'))
 
             var runID = (maxRunIDResult?.maxID ?? 0) + 1;

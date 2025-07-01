@@ -40,10 +40,7 @@
           "kind": "hana"
         },
         "[development]": {
-          "kind": "sqlite",
-          "credentials": {
-            "url": "db.sqlite"
-          }
+          "kind": "sqlite"
         }
       }
     }
