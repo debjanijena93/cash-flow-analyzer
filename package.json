@@ -9,34 +9,41 @@
     "@cap-js/hana": "^1",
     "@sap/cds": "^8",
     "@sap/cds-odata-v2-adapter-proxy": "^1.9.21",
+    "@sap/xsenv": "^5.6.1",
+    "@sap/xssec": "^4.8.0",
     "csv-parser": "^3.2.0",
-    "express": "^4"
+    "express": "^4",
+    "passport": "^0.7.0"
   },
   "devDependencies": {
     "@cap-js/cds-types": "^0.10.0",
-    "@cap-js/sqlite": "^1"
+    "@cap-js/sqlite": "^1",
+    "@sap/cds-dk": "^8"
   },
   "scripts": {
     "start": "cds-serve",
     "debug": "cds watch"
   },
   "cds": {
-    "auth": {
-      "[production]": {
-        "kind": "xsuaa"
+    "requires": {
+      "destinations": true,
+      "auth": {
+        "[production]": {
+          "kind": "xsuaa"
+        },
+        "[development]": {
+          "kind": "mocked"
+        }
       },
-      "[development]": {
-        "kind": "mocked"
-      }
-    },
-    "db": {
-      "[production]": {
-        "kind": "hana"
-      },
-      "[development]": {
-        "kind": "sqlite",
-        "credentials": {
-          "url": "db.sqlite"
+      "db": {
+        "[production]": {
+          "kind": "hana"
+        },
+        "[development]": {
+          "kind": "sqlite",
+          "credentials": {
+            "url": "db.sqlite"
+          }
         }
       }
     }
