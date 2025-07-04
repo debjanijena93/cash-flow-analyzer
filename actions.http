@@ -34,18 +34,33 @@ GET http://localhost:4004/odata/v4/main/FileUpload('file1')
 POST http://localhost:4004/odata/v4/main/importCSV
 
 ###
-GET http://localhost:4004/odata/v4/main/OpenItemsStagingTable
+POST http://localhost:4004/odata/v4/main/updateMatchedOpenItems
+
+
+###
+GET http://localhost:4004/odata/v4/main/OpenItemsStagingTable?$count=true
+
+###
+GET http://localhost:4004/odata/v4/main/MatchedOpenItems?$count=true
 
 
 ###
 POST http://localhost:4004/odata/v4/main/updateProcessingStatus
 Content-Type : application/json
-
+    
 {
 "items": [
         {"runID": 1, "processingStatus": "COMPLETED"},
         {"runID": 2, "processingStatus": "FAILED"}
     ]
+}
+
+###
+POST http://localhost:4004/odata/v4/main/refreshTables
+Content-Type : application/json
+
+{    
+    "table" : 2 
 }
 
 

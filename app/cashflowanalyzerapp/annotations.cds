@@ -251,29 +251,526 @@ annotate service.MatchedOpenItems with @(
     UI.LineItem : [
         {
             $Type : 'UI.DataField',
-            Label : 'seqNo',
-            Value : seqNo,
+            Value : matchID,
+            Label : 'Match ID',
         },
         {
             $Type : 'UI.DataField',
-            Label : 'runID',
-            Value : runID,
+            Value : matchSeq,
+            Label : 'Match Sequence',
         },
         {
             $Type : 'UI.DataField',
-            Label : 'documentDate',
+            Value : matchRemarks,
+            Label : 'Match Remarks',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : matchConfidence,
+            Label : 'Match Confidence',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : matchDate,
+            Label : 'Match Date',
+        },
+        {
+            $Type : 'UI.DataField',
+            Label : 'Document Date',
             Value : documentDate,
         },
         {
             $Type : 'UI.DataField',
-            Label : 'postingDate',
+            Label : 'Posting Date',
             Value : postingDate,
         },
         {
             $Type : 'UI.DataField',
-            Label : 'documentType',
+            Value : entryDate,
+            Label : 'Entry Date',
+        },
+        {
+            $Type : 'UI.DataField',
+            Label : 'Document Type',
             Value : documentType,
         },
+        {
+            $Type : 'UI.DataField',
+            Value : documentNumber,
+            Label : 'Document Number',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : postingKey,
+            Label : 'Posting Key',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : companyCode,
+            Label : 'Company Code',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : account,
+            Label : 'Account',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : amountInDocCurr,
+            Label : 'Amount in Document Currency',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : amountInLocalCurrency,
+            Label : 'Amount in Local Currency',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : absoluteValue,
+            Label : 'Absolute Value',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : usdAmount,
+            Label : 'USD Amount',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : assignment,
+            Label : 'Assignment',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : days,
+            Label : 'Days',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : agingBracket,
+            Label : 'Aging Bracket',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : clearingComments,
+            Label : 'Clearing Comments',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : clearingDate,
+            Label : 'Clearing Date',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : clearingRef,
+            Label : 'Clearing Ref',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : clearingSeq,
+            Label : 'Clearing Seq',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : clearingStatus,
+            Label : 'Clearing Status',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : documentHeaderText,
+            Label : 'Document Header Text',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : text,
+            Label : 'Text',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : nature,
+            Label : 'Nature',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : teamOrArea,
+            Label : 'Team or Area',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : username,
+            Label : 'Username',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : personInCharge,
+            Label : 'Person in Charge',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : profitCenter,
+            Label : 'Profit Center',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : reference,
+            Label : 'Reference',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : referenceKey2,
+            Label : 'Reference Key 2',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : yearMonth,
+            Label : 'Year/Month',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : createdAt,
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : createdBy,
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : modifiedAt,
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : modifiedBy,
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : postingDocument,
+            Label : 'Posting Document',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : postingPeriod,
+            Label : 'Posting Period',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : postingYearMonth,
+            Label : 'Posting Year/Month',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : processingStatus,
+            Label : 'Processing Status',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : rejectedBy,
+            Label : 'Rejected By',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : rejectionComment,
+            Label : 'Rejection Comment',
+        },
+        {
+            $Type : 'UI.DataFieldForAction',
+            Action : 'mainService.rejectMatchedEntry',
+            Label : 'Reject Match',
+            InvocationGrouping : #Isolated
+        },
+    ],
+    UI.SelectionPresentationVariant #tableView : {
+        $Type : 'UI.SelectionPresentationVariantType',
+        PresentationVariant : {
+            $Type : 'UI.PresentationVariantType',
+            Visualizations : [
+                '@UI.LineItem',
+            ],
+        },
+        SelectionVariant : {
+            $Type : 'UI.SelectionVariantType',
+            SelectOptions : [
+                {
+                    $Type : 'UI.SelectOptionType',
+                    PropertyName : matchFound,
+                    Ranges : [
+                        {
+                            Sign : #I,
+                            Option : #EQ,
+                            Low : true,
+                        },
+                    ],
+                },
+            ],
+        },
+        Text : 'Matched Entries',
+    },
+    UI.LineItem #tableView : [
+        {
+            $Type : 'UI.DataField',
+            Value : matchID,
+            Label : 'Match ID',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : matchSeq,
+            Label : 'Match Sequence',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : matchRemarks,
+            Label : 'Match Remarks',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : matchConfidence,
+            Label : 'Match Confidence',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : matchDate,
+            Label : 'Match Date',
+        },
+        {
+            $Type : 'UI.DataField',
+            Label : 'Document Date',
+            Value : documentDate,
+        },
+        {
+            $Type : 'UI.DataField',
+            Label : 'Posting Date',
+            Value : postingDate,
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : entryDate,
+            Label : 'Entry Date',
+        },
+        {
+            $Type : 'UI.DataField',
+            Label : 'Document Type',
+            Value : documentType,
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : documentNumber,
+            Label : 'Document Number',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : postingKey,
+            Label : 'Posting Key',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : companyCode,
+            Label : 'Company Code',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : account,
+            Label : 'Account',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : amountInDocCurr,
+            Label : 'Amount in Document Currency',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : amountInLocalCurrency,
+            Label : 'Amount in Local Currency',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : absoluteValue,
+            Label : 'Absolute Value',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : usdAmount,
+            Label : 'USD Amount',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : assignment,
+            Label : 'Assignment',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : days,
+            Label : 'Days',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : agingBracket,
+            Label : 'Aging Bracket',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : clearingComments,
+            Label : 'Clearing Comments',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : clearingDate,
+            Label : 'Clearing Date',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : clearingRef,
+            Label : 'Clearing Ref',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : clearingSeq,
+            Label : 'Clearing Seq',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : clearingStatus,
+            Label : 'Clearing Status',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : documentHeaderText,
+            Label : 'Document Header Text',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : text,
+            Label : 'Text',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : nature,
+            Label : 'Nature',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : teamOrArea,
+            Label : 'Team or Area',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : username,
+            Label : 'Username',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : personInCharge,
+            Label : 'Person in Charge',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : profitCenter,
+            Label : 'Profit Center',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : reference,
+            Label : 'Reference',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : referenceKey2,
+            Label : 'Reference Key 2',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : yearMonth,
+            Label : 'Year/Month',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : createdAt,
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : createdBy,
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : modifiedAt,
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : modifiedBy,
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : postingDocument,
+            Label : 'Posting Document',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : postingPeriod,
+            Label : 'Posting Period',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : postingYearMonth,
+            Label : 'Posting Year/Month',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : processingStatus,
+            Label : 'Processing Status',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : rejectedBy,
+            Label : 'Rejected By',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : rejectionComment,
+            Label : 'Rejection Comment',
+        }
+    ],
+    UI.SelectionPresentationVariant #tableView1 : {
+        $Type : 'UI.SelectionPresentationVariantType',
+        PresentationVariant : {
+            $Type : 'UI.PresentationVariantType',
+            Visualizations : [
+                '@UI.LineItem#tableView',
+            ],
+        },
+        SelectionVariant : {
+            $Type : 'UI.SelectionVariantType',
+            SelectOptions : [
+                {
+                    $Type : 'UI.SelectOptionType',
+                    PropertyName : matchFound,
+                    Ranges : [
+                        {
+                            Sign : #I,
+                            Option : #EQ,
+                            Low : false,
+                        },
+                    ],
+                },
+            ],
+        },
+        Text : 'Non-matched Entries',
+    },
+    UI.SelectionFields : [
+        account,
+        documentDate,
     ],
 );
+
+annotate service.MatchedOpenItems with {
+    account @Common.Label : 'GL Selection'
+};
+
+annotate service.MatchedOpenItems with {
+    documentDate @Common.Label : 'Document Date'
+};
+
+annotate service.MatchedOpenItems with {
+    amountInDocCurr @Measures.ISOCurrency : documentCurrency_code
+};
+
+annotate service.MatchedOpenItems with {
+    amountInLocalCurrency @Measures.ISOCurrency : localCurrency_code
+};
 

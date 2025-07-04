@@ -4,7 +4,11 @@ using app.openitems from '../db/openitems';
 service mainService {
 
     entity OpenItemsStagingTable as projection on openitems.OpenItemsStagingTable;
-    entity MatchedOpenItems      as projection on openitems.MatchedOpenItems;
+
+    entity MatchedOpenItems      as projection on openitems.MatchedOpenItems
+        actions {
+            action rejectMatchedEntry(rejectionComment : String) returns String;
+        };
 
     action updateProcessingStatus(items : array of {
         runID            : Integer;
@@ -13,6 +17,8 @@ service mainService {
 
     action uploadCSV(file : LargeBinary @Core.MediaType: 'text/csv' ) returns String;
     action importCSV()                                                returns String;
+    action refreshTables(table : Integer)                             returns String;
+    action updateMatchedOpenItems()                                   returns String;
 
     entity FileUpload {
         key fileName    : String;

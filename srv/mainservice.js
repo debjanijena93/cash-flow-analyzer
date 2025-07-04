@@ -3,13 +3,20 @@ const csv = require('csv-parser') // or use 'papaparse' for browser-side parsing
 const fs = require('fs')
 const { Readable } = require('stream');
 
+let rejectedEntries = [];
 
 function cleanNumber(value) {
     if (!value) return 0;
-    const cleaned = value.toString()
-        .replace(/[(),]/g, '')  // Remove parentheses (used for negative numbers)
-        .replace(/[^\d.-]/g, ''); // Remove all non-numeric except . and -
-    return parseFloat(cleaned) || 0;
+
+    // Handle negative numbers in parentheses
+    const isNegative = value.startsWith('(') && value.endsWith(')');
+    const cleaned = value
+        .replace(/[(),]/g, '')  // Remove parentheses
+        .replace(/[^\d.-]/g, '') // Remove all non-numeric except . and -
+        .replace(/,/g, '');      // Remove all commas
+
+    const numberValue = parseFloat(cleaned) || 0;
+    return isNegative ? -numberValue : numberValue;
 }
 
 function formatDate(dateStr) {
@@ -26,11 +33,6 @@ module.exports = cds.service.impl(async function (srv) {
 
         const { OpenItemsStagingTable } = cds.entities('app.openitems');
         const tx = cds.transaction(req);
-
-        /*        await tx.run(
-                    UPDATE(openItemsStagingTable)
-                        .set({ processingStatus: req.data.processingStatus })
-                        .where({ runID: req.data.runID }))*/
 
         try {
             // Process each item sequentially
@@ -51,7 +53,7 @@ module.exports = cds.service.impl(async function (srv) {
 
     })
 
-    srv.on('uploadCSV', async (req) => {
+    /*srv.on('uploadCSV', async (req) => {
         try {
             const { file } = req.data;
 
@@ -110,14 +112,14 @@ module.exports = cds.service.impl(async function (srv) {
             console.error('Import error:', error);
             return req.error(500, `Error importing CSV: ${error.message}`);
         }
-    });
+    });*/
 
     srv.on('importCSV', async (req) => {// Get the uploaded file
 
-
+        let transformedRecords;
         try {
 
-            const csvFilePath = './srv/datafiles/inputfile2.csv'; // or provide path relative to project root
+            const csvFilePath = './srv/datafiles/openitems_inputfile.csv'; // or provide path relative to project root
 
             // Read and parse the CSV file
             const records = await new Promise((resolve, reject) => {
@@ -137,12 +139,10 @@ module.exports = cds.service.impl(async function (srv) {
                     .columns('max(runID) as maxID'))
 
             var runID = (maxRunIDResult?.maxID ?? 0) + 1;
-
-
             var currentSeqNo = 1;
-
+            absoluteValue = records[0]['Absolute Value'];
             // Transform and insert records into the entity
-            const transformedRecords = records.map(record => ({
+            transformedRecords = records.map(record => ({
                 // Map CSV fields to entity fields
                 runID: runID,
                 seqNo: currentSeqNo++,
@@ -171,8 +171,8 @@ module.exports = cds.service.impl(async function (srv) {
                 account: record['Account'],
                 username: record['User name'],
                 postingPeriod: record['Posting Period'],
-                absoluteValue: record['Absolute Value'],
-                usdAmount: record['USD Amount'],
+                absoluteValue: cleanNumber(record['Absolute Value']),
+                usdAmount: cleanNumber(record['USD Amount']),
                 days: record['Days'],
                 agingBracket: record['Aging Bracket']
             }));
@@ -185,5 +185,147 @@ module.exports = cds.service.impl(async function (srv) {
         }
 
 
+    });
+
+    srv.on('updateMatchedOpenItems', async (req) => {
+
+        let transformedRecords;
+        try {
+
+            const csvFilePath = './srv/datafiles/matchedopenitems.csv'; // or provide path relative to project root
+
+            // Read and parse the CSV file
+            const records = await new Promise((resolve, reject) => {
+                const results = [];
+                fs.createReadStream(csvFilePath)
+                    .pipe(csv())
+                    .on('data', (data) => results.push(data))
+                    .on('end', () => resolve(results))
+                    .on('error', (error) => reject(error));
+            });
+
+            // Get the current maximum seqNo for this runID
+            const { MatchedOpenItems } = cds.entities;
+
+            // Transform and insert records into the entity
+            transformedRecords = records.map(record => ({
+                // Map CSV fields to entity fields
+                runID: record['runID'],
+                seqNo: record['seqNo'],
+                documentDate: formatDate(record['documentDate']),
+                postingDate: formatDate(record['postingDate']),
+                entryDate: formatDate(record['entryDate']),
+                documentType: record['documentType'],
+                profitCenter: record['profitCenter'],
+                reference: record['reference'],
+                referenceKey2: record['referenceKey2'],
+                assignment: record['assignment'],
+                documentHeaderText: record['documentHeaderText'],
+                text: record['text'],
+                postingKey: record['postingKey'],
+                documentCurrency: { code: record['documentCurrency']?.trim() },
+                amountInDocCurr: cleanNumber(record['amountInDocCurr']),
+                localCurrency: { code: record['localCurrency']?.trim() },
+                amountInLocalCurrency: cleanNumber(record['amountInLocalCurrency']),
+                companyCode: record['companyCode'],
+                yearMonth: record['yearMonth'],
+                documentNumber: record['documentNumber'],
+                account: record['account'],
+                username: record['username'],
+                postingPeriod: record['postingPeriod'],
+                absoluteValue: cleanNumber(record['absoluteValue']),
+                usdAmount: cleanNumber(record['usdAmount']),
+                days: record['days'],
+                agingBracket: record['agingBracket'],
+                matchFound: record['matchFound'] === 'X',
+                matchID: record['matchID'],
+                matchSeq: record['matchSeq'],
+                matchConfidence: record['matchConfidence'],
+                matchRemarks: record['matchRemarks'],
+                matchStatus: record['matchStatus'],
+                matchDate: formatDate(record['matchDate']),
+                nature: record['nature'],
+                teamOrArea: record['teamOrArea'],
+                personInCharge: record['personInCharge']
+            }));
+
+            await INSERT.into(MatchedOpenItems).entries(transformedRecords);
+
+            return { message: `${records.length} records imported successfully` };
+        } catch (error) {
+            req.error(500, `Error importing CSV: ${error.message}`);
+        }
+
+
+    });
+
+    srv.on('refreshTables', async (req) => {
+
+        const { OpenItemsStagingTable, MatchedOpenItems, ClearingData } = cds.entities('app.openitems');
+        const tx = cds.transaction(req);
+
+        if (req.data.table === 1) {
+            await tx.run(
+                DELETE(OpenItemsStagingTable)
+            );
+
+        } else if (req.data.table === 2) {
+            await tx.run(
+                DELETE(MatchedOpenItems)
+            );
+
+        } else if (req.data.table === 3) {
+            await tx.run(
+                DELETE(ClearingData)
+            );
+
+        } else if (req.data.table === 4) {
+            await tx.run(
+                DELETE(OpenItemsStagingTable)
+            );
+            await tx.run(
+                DELETE(MatchedOpenItems)
+            );
+            await tx.run(
+                DELETE(ClearingData)
+            );
+        }
+    });
+
+    srv.on('rejectMatchedEntry', async (req) => {
+
+        try {
+
+            const { runID, seqNo } = req.params[0];
+            const tx = cds.transaction(req);
+            const { MatchedOpenItems } = cds.entities('app.openitems');
+
+            var entryToReject = await cds.run(SELECT.from(MatchedOpenItems).where({
+                runID: runID,
+                seqNo: seqNo,
+                matchFound: true
+            }));
+
+            if (entryToReject.length > 0) {
+                var matchingEntries = await cds.run(SELECT.from(MatchedOpenItems).where({
+                    matchID: entryToReject[0]?.matchID,
+                    matchFound: true
+                }));
+
+                matchingEntries.forEach(entry => {
+                    entry.rejectionComment = req.data.rejectionComment
+                    entry.rejectedBy = req.user.id
+                    entry.matchFound = false
+                });
+
+                await tx.run(
+                    UPSERT.into(MatchedOpenItems).entries(matchingEntries)
+                );
+            }
+        } catch (error) {
+            console.log(error);
+        }
     })
+
+
 })
